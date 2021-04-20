@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Lab06</string>
+    <string name="welcome_messages">Stan magazynu dla %1$s wynosi %2$d </string>
+</resources>
