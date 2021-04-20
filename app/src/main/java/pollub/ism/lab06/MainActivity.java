@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import pollub.ism.lab06.databinding.ActivityMainBinding;
 
@@ -70,7 +71,14 @@ public class MainActivity extends AppCompatActivity {
 
         switch (operacja){
             case SKLADUJ: nowaIlosc = wybraneWarzywoIlosc + zmianaIlosci; break;
-            case WYDAJ: nowaIlosc = wybraneWarzywoIlosc - zmianaIlosci; break;
+            case WYDAJ:
+                if(wybraneWarzywoIlosc - zmianaIlosci >= 0) {
+                    nowaIlosc = wybraneWarzywoIlosc - zmianaIlosci;
+                }
+                else { nowaIlosc = wybraneWarzywoIlosc;
+                    Toast.makeText(this, "Nie ma tyle na magazynie", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
 
         bazaDanych.zmienStanMagazynu(wybraneWarzywoNazwa, nowaIlosc);
@@ -78,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         aktualizuj();
 
     }
+
     private void aktualizuj(){
         wybraneWarzywoIlosc = bazaDanych.podajIlosc(wybraneWarzywoNazwa);
         binding.tekstStanMagazynu.setText(getString(R.string.welcome_messages, wybraneWarzywoNazwa, wybraneWarzywoIlosc));

@@ -65,8 +65,8 @@ public class MagazynBazaDanych extends SQLiteOpenHelper {
         } catch(SQLException ex){
             // Należałoby to jakoś obsłużyć...
         } finally {
-            if(kursor!=null) kursor.close();
-            if(bazaDoOdczytu!=null) bazaDoOdczytu.close();
+            if(kursor != null) kursor.close();
+            if(bazaDoOdczytu != null) bazaDoOdczytu.close();
         }
 
         return ilosc;
