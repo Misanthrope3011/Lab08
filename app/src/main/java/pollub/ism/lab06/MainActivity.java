@@ -1,6 +1,7 @@
 package pollub.ism.lab06;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
 
 import android.os.Bundle;
 import android.view.View;
@@ -14,15 +15,25 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayAdapter<CharSequence> adapter;
     private ActivityMainBinding binding;
-    MagazynBazaDanych bazaDanych;
     String wybraneWarzywoNazwa = "";
     Integer wybraneWarzywoIlosc = 0;
-
     public enum OperacjaMagazynowa {SKLADUJ, WYDAJ};
+    private BazaMagazynowa bazaDanych;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        bazaDanych = new MagazynBazaDanych(this);
         super.onCreate(savedInstanceState);
+        bazaDanych = Room.databaseBuilder(getApplicationContext(), BazaMagazynowa.class, BazaMagazynowa.NAZWA_BAZY)
+                .allowMainThreadQueries().build();
+
+        if(bazaDanych.pozycjaMagazynowaDAO().size() == 0){
+            String[] asortyment = getResources().getStringArray(R.array.Asortyment);
+            for(String nazwa : asortyment){
+                PozycjaMagazynowa pozycjaMagazynowa = new PozycjaMagazynowa();
+                pozycjaMagazynowa.NAME = nazwa; pozycjaMagazynowa.QUANTITY = 0;
+                bazaDanych.pozycjaMagazynowaDAO().insert(pozycjaMagazynowa);
+            }
+        }
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         adapter = ArrayAdapter.createFromResource(this, R.array.Asortyment, android.R.layout.simple_dropdown_item_1line);
@@ -56,10 +67,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-        private void zmienStan(OperacjaMagazynowa operacja){
+    private void zmienStan(OperacjaMagazynowa operacja){
 
         Integer zmianaIlosci = null, nowaIlosc = null;
-
 
         try {
             zmianaIlosci = Integer.parseInt(binding.edycjaIlosc.getText().toString());
@@ -71,26 +81,22 @@ public class MainActivity extends AppCompatActivity {
 
         switch (operacja){
             case SKLADUJ: nowaIlosc = wybraneWarzywoIlosc + zmianaIlosci; break;
-            case WYDAJ:
-                if(wybraneWarzywoIlosc - zmianaIlosci >= 0) {
-                    nowaIlosc = wybraneWarzywoIlosc - zmianaIlosci;
-                }
-                else { nowaIlosc = wybraneWarzywoIlosc;
-                    Toast.makeText(this, "Nie ma tyle na magazynie", Toast.LENGTH_SHORT).show();
-                }
+            case WYDAJ:  if(wybraneWarzywoIlosc - zmianaIlosci >= 0) {
+                nowaIlosc = wybraneWarzywoIlosc - zmianaIlosci;
+            }
+            else { nowaIlosc = wybraneWarzywoIlosc;
+                Toast.makeText(this, "Nie ma tyle na magazynie", Toast.LENGTH_SHORT).show();
+            }
                 break;
         }
 
-        bazaDanych.zmienStanMagazynu(wybraneWarzywoNazwa, nowaIlosc);
+        bazaDanych.pozycjaMagazynowaDAO().updateQuantityByName(wybraneWarzywoNazwa,nowaIlosc);
 
         aktualizuj();
-
     }
 
     private void aktualizuj(){
-        wybraneWarzywoIlosc = bazaDanych.podajIlosc(wybraneWarzywoNazwa);
-        binding.tekstStanMagazynu.setText(getString(R.string.welcome_messages, wybraneWarzywoNazwa, wybraneWarzywoIlosc));
-
-
+        wybraneWarzywoIlosc = bazaDanych.pozycjaMagazynowaDAO().findQuantityByName(wybraneWarzywoNazwa);
+        binding.tekstStanMagazynu.setText("Stan magazynu dla " + wybraneWarzywoNazwa + " wynosi: " + wybraneWarzywoIlosc);
     }
 }
