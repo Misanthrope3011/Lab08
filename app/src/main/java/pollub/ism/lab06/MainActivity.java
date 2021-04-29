@@ -9,6 +9,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import java.time.LocalDateTime;
+
 import pollub.ism.lab06.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         bazaDanych = Room.databaseBuilder(getApplicationContext(), BazaMagazynowa.class, BazaMagazynowa.NAZWA_BAZY)
+                .fallbackToDestructiveMigration()
                 .allowMainThreadQueries().build();
 
         if(bazaDanych.pozycjaMagazynowaDAO().size() == 0){
@@ -68,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void zmienStan(OperacjaMagazynowa operacja){
-
+        boolean isValidValue = true;
         Integer zmianaIlosci = null, nowaIlosc = null;
 
         try {
@@ -78,16 +81,22 @@ public class MainActivity extends AppCompatActivity {
         }finally {
             binding.edycjaIlosc.setText("");
         }
-
+        HistoriaTransakcji historiaTransakcji = new HistoriaTransakcji(LocalDateTime.now().toString(),wybraneWarzywoIlosc, zmianaIlosci, wybraneWarzywoNazwa);
         switch (operacja){
             case SKLADUJ: nowaIlosc = wybraneWarzywoIlosc + zmianaIlosci; break;
             case WYDAJ:  if(wybraneWarzywoIlosc - zmianaIlosci >= 0) {
                 nowaIlosc = wybraneWarzywoIlosc - zmianaIlosci;
             }
-            else { nowaIlosc = wybraneWarzywoIlosc;
+            else {
+                isValidValue = false;
+                nowaIlosc = wybraneWarzywoIlosc;
                 Toast.makeText(this, "Nie ma tyle na magazynie", Toast.LENGTH_SHORT).show();
             }
                 break;
+        }
+
+        if(isValidValue) {
+            bazaDanych.transackcje().insert(historiaTransakcji);
         }
 
         bazaDanych.pozycjaMagazynowaDAO().updateQuantityByName(wybraneWarzywoNazwa,nowaIlosc);
@@ -96,7 +105,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void aktualizuj(){
+        StringBuilder stringBuilder = new StringBuilder();
         wybraneWarzywoIlosc = bazaDanych.pozycjaMagazynowaDAO().findQuantityByName(wybraneWarzywoNazwa);
         binding.tekstStanMagazynu.setText("Stan magazynu dla " + wybraneWarzywoNazwa + " wynosi: " + wybraneWarzywoIlosc);
+
+
+        for (HistoriaTransakcji result : bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa)) {
+            stringBuilder.append(result.nazwa_warzywa).append(" ").append(result.data_transakcji).append(" ")
+                    .append(result.stara_ilosc).append(" ").append(result.nowa_ilosc + result.stara_ilosc).append("\n");
+        }
+        binding.wyswietlDane.setText(stringBuilder.toString());
     }
 }
