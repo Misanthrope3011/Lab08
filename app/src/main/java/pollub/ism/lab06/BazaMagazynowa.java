@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {PozycjaMagazynowa.class, HistoriaTransakcji.class}, version = 2, exportSchema = false)
+@Database(entities = {PozycjaMagazynowa.class, HistoriaTransakcji.class}, version = 4, exportSchema = false)
 public abstract class BazaMagazynowa extends RoomDatabase {
 
     public static final String NAZWA_BAZY = "Warzywniak1";

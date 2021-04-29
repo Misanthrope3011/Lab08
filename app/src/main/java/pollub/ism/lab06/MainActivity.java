@@ -9,7 +9,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import pollub.ism.lab06.databinding.ActivityMainBinding;
 
@@ -81,7 +86,10 @@ public class MainActivity extends AppCompatActivity {
         }finally {
             binding.edycjaIlosc.setText("");
         }
-        HistoriaTransakcji historiaTransakcji = new HistoriaTransakcji(LocalDateTime.now().toString(),wybraneWarzywoIlosc, zmianaIlosci, wybraneWarzywoNazwa);
+        ZoneId z = ZoneId.of( "UTC+2" ) ; // Or get the JVM’s current default time zone: ZoneId.systemDefault()
+        ZonedDateTime zdt = ZonedDateTime.now(z);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
+
         switch (operacja){
             case SKLADUJ: nowaIlosc = wybraneWarzywoIlosc + zmianaIlosci; break;
             case WYDAJ:  if(wybraneWarzywoIlosc - zmianaIlosci >= 0) {
@@ -94,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
             }
                 break;
         }
+        HistoriaTransakcji historiaTransakcji = new HistoriaTransakcji(zdt.format(formatter),wybraneWarzywoIlosc, nowaIlosc, wybraneWarzywoNazwa);
 
         if(isValidValue) {
             bazaDanych.transackcje().insert(historiaTransakcji);
@@ -109,10 +118,9 @@ public class MainActivity extends AppCompatActivity {
         wybraneWarzywoIlosc = bazaDanych.pozycjaMagazynowaDAO().findQuantityByName(wybraneWarzywoNazwa);
         binding.tekstStanMagazynu.setText("Stan magazynu dla " + wybraneWarzywoNazwa + " wynosi: " + wybraneWarzywoIlosc);
 
-
         for (HistoriaTransakcji result : bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa)) {
             stringBuilder.append(result.nazwa_warzywa).append(" ").append(result.data_transakcji).append(" ")
-                    .append(result.stara_ilosc).append(" ").append(result.nowa_ilosc + result.stara_ilosc).append("\n");
+                    .append(result.stara_ilosc).append(" ").append(result.nowa_ilosc).append("\n");
         }
         binding.wyswietlDane.setText(stringBuilder.toString());
     }
