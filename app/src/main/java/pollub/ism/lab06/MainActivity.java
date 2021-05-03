@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
             stringBuilder.append(result.nazwa_warzywa).append(" ").append(result.data_transakcji).append(" ")
                     .append(result.stara_ilosc).append(" ").append(result.nowa_ilosc).append("\n");
         }
+        binding.tekstJednostka.setText(String.valueOf(bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa).get(bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa).size() - 1).data_transakcji));
         binding.wyswietlDane.setText(stringBuilder.toString());
     }
 }
