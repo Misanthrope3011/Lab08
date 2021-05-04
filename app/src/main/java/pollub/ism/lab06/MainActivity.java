@@ -8,14 +8,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-
 import pollub.ism.lab06.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -122,7 +117,8 @@ public class MainActivity extends AppCompatActivity {
             stringBuilder.append(result.nazwa_warzywa).append(" ").append(result.data_transakcji).append(" ")
                     .append(result.stara_ilosc).append(" ").append(result.nowa_ilosc).append("\n");
         }
-        binding.tekstJednostka.setText(String.valueOf(bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa).get(bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa).size() - 1).data_transakcji));
+        if(bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa).size() > 0)
+            binding.tekstJednostka.setText(String.valueOf(bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa).get(bazaDanych.transackcje().selectAllUpdates(wybraneWarzywoNazwa).size() - 1).data_transakcji));
         binding.wyswietlDane.setText(stringBuilder.toString());
     }
 }
